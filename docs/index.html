@@ -343,7 +343,7 @@
           <div class="bar"><span class="glyph" id="demoGlyph">🔥</span> <b>FrostByte</b></div>
           <div class="status" id="demoStatus">Roblox running hot — you're AFK…</div>
           <div class="gauge">
-            <div class="row"><span>Roblox · CPU</span><span id="demoMode">Cool mode</span></div>
+            <div class="row"><span id="demoApp">Roblox · CPU</span><span id="demoMode">Cool mode</span></div>
             <div class="pct" id="demoPct">132%</div>
             <div class="track"><div class="fill"></div></div>
           </div>
@@ -568,15 +568,27 @@
       }
       raf = requestAnimationFrame(tick);
     }
+    var appLabel = document.getElementById('demoApp');
     function apply(state){
       demo.classList.remove('hot', 'cool', 'freeze');
       demo.classList.add(state);
       segCool.classList.toggle('on', mode === 'cool');
       segFreeze.classList.toggle('on', mode === 'freeze');
       modeLabel.textContent = mode === 'freeze' ? 'Deep Freeze' : 'Cool mode';
-      if(state === 'hot'){ glyph.textContent = '🔥'; status.textContent = 'Roblox running hot — you’re AFK…'; animateTo(132); }
-      else if(state === 'cool'){ glyph.textContent = '❄️'; status.textContent = '💤 Roblox throttled & cooling.'; animateTo(24); }
-      else { glyph.textContent = '🧊'; status.textContent = '❄️ Roblox frozen — a true 0% CPU.'; animateTo(0); }
+      // Deep Freeze fully pauses the game, so an online server would drop you.
+      // Show it cooling an offline game instead of Roblox — matches the advice
+      // the rest of the page gives.
+      var offline = mode === 'freeze';
+      appLabel.textContent = (offline ? 'Offline game' : 'Roblox') + ' · CPU';
+      if(state === 'hot'){
+        glyph.textContent = '🔥';
+        status.textContent = (offline ? 'Your offline game is running hot' : 'Roblox is running hot') + ' — you’re AFK…';
+        animateTo(132);
+      } else if(state === 'cool'){
+        glyph.textContent = '❄️'; status.textContent = '💤 Roblox throttled & cooling.'; animateTo(24);
+      } else {
+        glyph.textContent = '🧊'; status.textContent = '❄️ Frozen — a true 0% CPU. No server to disconnect from.'; animateTo(0);
+      }
     }
     function clearTimers(){ timers.forEach(clearTimeout); timers = []; }
     // Cooled phase uses the selected mode, so Deep Freeze keeps cycling
