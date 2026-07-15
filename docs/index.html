@@ -49,6 +49,11 @@
   }
 
   *{box-sizing:border-box}
+  /* Reserve the scrollbar's width permanently. The pageIn/cardIn animations
+     slide content down a few px, which briefly overflows and summons a
+     scrollbar — without this, its arrival and exit resize the whole layout
+     and the page visibly jumps on every navigation. */
+  html{scrollbar-gutter:stable}
   body{
     margin:0; background:var(--ground); color:var(--text);
     font-family:var(--sans); line-height:1.6; -webkit-font-smoothing:antialiased;
