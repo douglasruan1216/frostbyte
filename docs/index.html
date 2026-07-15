@@ -435,7 +435,7 @@
         <p>Download it today and <b>every Pro feature below is unlocked on your Mac permanently</b> — even after the price goes up. No key, no account, no email. It just stays yours.</p>
         <div class="meter">
           <div class="meter-top">
-            <span><span class="n" id="dlCount">0</span> of <span class="n">100</span> early spots claimed</span>
+            <span><span class="n" id="dlCount">0</span> of <span class="n">100</span> downloads so far</span>
             <span id="dlLeft">100 left</span>
           </div>
           <div class="dlbar"><i id="dlBar"></i></div>
@@ -527,7 +527,7 @@
       var left = Math.max(0, goal - n);
       document.getElementById('dlCount').textContent = n;
       document.getElementById('dlLeft').textContent =
-        left > 0 ? left + ' left' : 'early access closed';
+        left > 0 ? left + ' to go' : 'goal reached — closing soon';
       document.getElementById('dlBar').style.width = Math.min(100, (n / goal) * 100) + '%';
     }
     paintCount(Number(ea.dataset.count) || 0);   // paint the fallback immediately…
