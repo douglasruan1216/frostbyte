@@ -137,6 +137,8 @@ final class WebServer {
             "running": c.anyTargetRunning,
             "mode": c.mode.rawValue,
             "pro": c.isPro,
+            "trial": c.trialActive && !c.licensed,
+            "trialDays": c.trialDaysLeft,
             "enabled": c.enabled,
             "emergencyChill": c.emergencyChill,
             "emergency": c.emergencyActive,

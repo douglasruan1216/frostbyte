@@ -121,6 +121,31 @@ instead, which needs no secret.
 
 ---
 
+## The 7-day free trial
+
+New installs (after early access ends) get **every Pro feature free for 7 days**.
+`CoolController.trialDays = 7`.
+
+- **No card, no account, no signup.** The app has no payment code and no server — it
+  *cannot* charge anyone. When the 7 days lapse it simply settles into the free tier and
+  keeps working forever. Nothing expires, nobody is billed.
+- The install date is written in **two places** — `trialStart` in preferences and
+  `~/Library/Application Support/FrostByte/install-date` — and the **earlier** one always
+  wins, with each healing the other. So clearing one doesn't grant a fresh trial.
+- **Re-downloading the app resets nothing.** Neither marker lives inside the .app bundle.
+
+### Pro can't really be enforced — and that's fine
+
+This source is public and MIT-licensed, so anyone can set `freeLaunch = true` and rebuild,
+or just run `defaults write com.douglas.FrostByte earlyAdopter -bool true`. MIT explicitly
+permits the first one.
+
+**Don't fight this.** Every check you could add is visible in the source, and obfuscation
+makes the app look sketchy to the honest majority — who are the only people who'd ever pay.
+Someone willing to run Terminal commands weekly (losing their saved stats each time) to dodge
+$4.99 was never a customer. What buyers actually pay for is convenience and supporting the
+dev. Keep buying easy and never nag honest users.
+
 ## Suggested launch order
 
 1. ✅ Ship the app **free** first, notarized (Steps 1–3). Build a small audience.

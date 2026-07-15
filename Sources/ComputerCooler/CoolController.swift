@@ -80,7 +80,7 @@ final class CoolController: ObservableObject {
                 if (p["chargebacked"] as? Bool) == true { ok = false }
             }
             licenseChecking = false
-            if ok { licenseKey = key; isPro = true; licenseError = nil }
+            if ok { licenseKey = key; licensed = true; licenseError = nil }
             else  { licenseError = "That key didn’t work — check for typos." }
         } catch {
             licenseChecking = false
@@ -89,7 +89,71 @@ final class CoolController: ObservableObject {
     }
 
     /// Drops a purchased licence, but never revokes an early-adopter's Pro.
-    func deactivateLicense() { isPro = earlyAdopter; licenseKey = ""; licenseError = nil }
+    func deactivateLicense() { licensed = false; licenseKey = ""; licenseError = nil }
+
+    // ── Free trial ────────────────────────────────────────────────────────
+    /// Everything unlocked for this many days after the first launch. No card,
+    /// no account, no signup — when it lapses the app simply settles into the
+    /// free tier and keeps working. Nothing is ever charged: there is no
+    /// payment code in this app and no server to hold a card on.
+    static let trialDays = 7
+    /// First-launch date, resolved from both markers in resolveTrialStart().
+    private var trialStart: Date?
+
+    /// The install date is written in TWO places and we always trust the
+    /// EARLIER one, so clearing just one doesn't hand out a fresh trial.
+    /// Re-downloading the app resets nothing by itself — neither marker lives
+    /// inside the .app bundle.
+    ///
+    /// This is a speed bump, not a lock: the source is public, so anyone who
+    /// wants to can bypass it. That's fine — see PUBLISHING.md. Don't add
+    /// keychain checks or obfuscation on top; it would only make the app look
+    /// sketchy to the honest majority, who are the only people paying.
+    private var markerURL: URL {
+        let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("FrostByte", isDirectory: true)
+        return base.appendingPathComponent("install-date")
+    }
+    private func readMarkerFile() -> Date? {
+        guard let s = try? String(contentsOf: markerURL, encoding: .utf8),
+              let t = TimeInterval(s.trimmingCharacters(in: .whitespacesAndNewlines))
+        else { return nil }
+        return Date(timeIntervalSince1970: t)
+    }
+    private func writeMarkers(_ date: Date) {
+        UserDefaults.standard.set(date.timeIntervalSince1970, forKey: "trialStart")
+        try? FileManager.default.createDirectory(at: markerURL.deletingLastPathComponent(),
+                                                 withIntermediateDirectories: true)
+        try? String(date.timeIntervalSince1970).write(to: markerURL, atomically: true, encoding: .utf8)
+    }
+
+    /// Resolve the install date from both markers, healing whichever is missing.
+    private func resolveTrialStart() {
+        let now = Date()
+        var found: [Date] = []
+        let stored = UserDefaults.standard.double(forKey: "trialStart")
+        if stored > 0 { found.append(Date(timeIntervalSince1970: stored)) }
+        if let f = readMarkerFile() { found.append(f) }
+        // Earliest wins; a date in the future means a rolled-back clock, so
+        // treat it as "now" rather than letting it extend the trial forever.
+        var start = found.min() ?? now
+        if start > now { start = now }
+        trialStart = start
+        writeMarkers(start)          // re-write both, healing a deleted one
+        updateTrial()
+    }
+    /// Recomputed every tick so the trial lapses live, without a restart.
+    private func updateTrial() {
+        guard let start = trialStart else { return }
+        let active = Date() < start.addingTimeInterval(Double(Self.trialDays) * 86_400)
+        if trialActive != active { trialActive = active }
+    }
+    /// Whole days left, for the UI. 0 once it's over.
+    var trialDaysLeft: Int {
+        guard let start = trialStart else { return 0 }
+        let end = start.addingTimeInterval(Double(Self.trialDays) * 86_400)
+        return max(0, Int(ceil(end.timeIntervalSinceNow / 86_400)))
+    }
 
     /// Free tier may manage only `freeAppLimit` apps (already-managed ones and
     /// Pro users are always allowed).
@@ -297,8 +361,14 @@ final class CoolController: ObservableObject {
     @Published var enabled = true                  { didSet { save() } }
     @Published var mode: Mode = .throttle           { didSet { save(); if !isLoading { reapplyMode() } } }
     @Published var afkSeconds: Int = 30             { didSet { save() } }
-    /// Pro unlock (paid tier). Owner key or a verified license flips it on.
-    @Published var isPro = false                    { didSet { save() } }
+    /// A verified paid licence. THIS is the part that persists — `isPro` must
+    /// not, or the trial would be written to disk as a permanent unlock.
+    @Published private(set) var licensed = false    { didSet { save() } }
+    /// True while the free trial is still running (recomputed on each tick).
+    @Published private(set) var trialActive = false
+    /// Pro is unlocked if you were early, you bought it, or you're on trial.
+    /// Deliberately computed, never stored.
+    var isPro: Bool { earlyAdopter || licensed || trialActive }
     @Published var licenseKey = ""                  { didSet { save() } }
     /// Live UI state while checking a key online (not persisted).
     @Published var licenseChecking = false
@@ -383,6 +453,7 @@ final class CoolController: ObservableObject {
     private func tick() {
         tickCount += 1
         if tickCount % 2 == 0 { cpuMap = readAllCPU() }   // refresh CPU ~every 2s
+        if tickCount % 60 == 0 { updateTrial() }          // lapse the trial live
 
         let selfBID = Bundle.main.bundleIdentifier ?? ""
         let running = NSWorkspace.shared.runningApplications
@@ -724,7 +795,7 @@ final class CoolController: ObservableObject {
         d.set(enabled, forKey: "enabled")
         d.set(mode.rawValue, forKey: "mode")
         d.set(afkSeconds, forKey: "afkSeconds")
-        d.set(isPro, forKey: "isPro")
+        d.set(licensed, forKey: "licensed")
         d.set(earlyAdopter, forKey: "earlyAdopter")
         d.set(licenseKey, forKey: "licenseKey")
         d.set(emergencyChill, forKey: "emergencyChill")
@@ -752,7 +823,8 @@ final class CoolController: ObservableObject {
         if d.object(forKey: "enabled") != nil { enabled = d.bool(forKey: "enabled") }
         if let m = d.string(forKey: "mode"), let mv = Mode(rawValue: m) { mode = mv }
         let a = d.integer(forKey: "afkSeconds"); if a > 0 { afkSeconds = a }
-        isPro = d.bool(forKey: "isPro")
+        // "isPro" is the pre-trial key name — migrate it once.
+        licensed = d.bool(forKey: "licensed") || d.bool(forKey: "isPro")
         licenseKey = d.string(forKey: "licenseKey") ?? ""
         // Early access: stamp this Mac once, then honour the stamp forever.
         earlyAdopter = d.bool(forKey: "earlyAdopter")
@@ -760,7 +832,7 @@ final class CoolController: ObservableObject {
             earlyAdopter = true
             d.set(true, forKey: "earlyAdopter")
         }
-        if earlyAdopter { isPro = true }
+        resolveTrialStart()   // needs earlyAdopter resolved first
         emergencyChill = d.bool(forKey: "emergencyChill")
         if d.object(forKey: "emergencyCPU") != nil { emergencyCPU = d.double(forKey: "emergencyCPU") }
         let es = d.integer(forKey: "emergencySeconds"); if es > 0 { emergencySeconds = es }

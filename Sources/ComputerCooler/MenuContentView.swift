@@ -412,6 +412,15 @@ struct MenuContentView: View {
                 Text("Early access — every feature is unlocked, and it stays that way on this Mac forever. Thanks for being early! 💙")
                     .font(.caption2).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
+            } else if cool.trialActive && !cool.licensed {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Free trial — \(cool.trialDaysLeft) day\(cool.trialDaysLeft == 1 ? "" : "s") left. Everything's unlocked.")
+                        .font(.caption2.bold()).foregroundStyle(.orange)
+                    Text("No card, no account — when it ends FrostByte just goes back to the free tier and keeps working. Nothing gets charged.")
+                        .font(.caption2).foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    licenseBox
+                }
             } else if cool.isPro {
                 Text("Thanks for going Pro! 💙 Every feature is unlocked.")
                     .font(.caption2).foregroundStyle(.secondary)
@@ -420,18 +429,23 @@ struct MenuContentView: View {
                 Text("Unlocks Emergency Chill, Deep Freeze, phone remote, custom auto-launch, and cooling unlimited apps.")
                     .font(.caption2).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
-                HStack {
-                    TextField("License key", text: $licenseField)
-                        .textFieldStyle(.roundedBorder).font(.caption)
-                    Button(cool.licenseChecking ? "Checking…" : "Unlock") {
-                        cool.activateLicense(licenseField)
-                    }
-                    .disabled(cool.licenseChecking)
-                }
-                if let err = cool.licenseError {
-                    Text(err).font(.caption2).foregroundStyle(.red)
-                }
+                licenseBox
             }
+        }
+    }
+
+    /// Shared by the trial and locked states — both need a way to enter a key.
+    @ViewBuilder private var licenseBox: some View {
+        HStack {
+            TextField("License key", text: $licenseField)
+                .textFieldStyle(.roundedBorder).font(.caption)
+            Button(cool.licenseChecking ? "Checking…" : "Unlock") {
+                cool.activateLicense(licenseField)
+            }
+            .disabled(cool.licenseChecking)
+        }
+        if let err = cool.licenseError {
+            Text(err).font(.caption2).foregroundStyle(.red)
         }
     }
 
