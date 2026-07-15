@@ -1,0 +1,9 @@
+# Build output — rebuilt by ./build_app.sh, and shipped via GitHub Releases
+FrostByte.app/
+*.app/
+*.zip
+
+# Personal / machine-local state, not source
+launch-apps.txt
+
+.DS_Store
