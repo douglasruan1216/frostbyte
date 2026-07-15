@@ -482,6 +482,34 @@
     </div>
   </section>
 
+  <!-- Shown only after clicking Download. Deliberately NOT part of the 5-page
+       deck (the pager selects .page:not(#thanks)) — it's a destination, not a
+       slide, and it exists to put the right-click step in front of people at
+       the one moment they actually need it. -->
+  <section class="page" id="thanks">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">Downloading…</p>
+        <h2>Thanks — you're one of the early ones. 🧊</h2>
+        <p><span class="mono">FrostByte.zip</span> is heading to your Downloads folder, and <b>Pro is already unlocked on your Mac — permanently</b>. Three steps to go:</p>
+      </div>
+      <div class="steps">
+        <div class="step"><div class="n">STEP 01</div><h3>Unzip it</h3><p>Double-click <span class="mono">FrostByte.zip</span> in your Downloads folder.</p></div>
+        <div class="step"><div class="n">STEP 02</div><h3>Drag to Applications</h3><p>Drop <span class="mono">FrostByte.app</span> into your Applications folder.</p></div>
+        <div class="step"><div class="n">STEP 03</div><h3>Right-click → Open</h3><p><b>Right-click, not double-click.</b> Double-clicking gives you no Open button at all — this step is the whole trick.</p></div>
+      </div>
+      <div class="install">
+        <p>macOS will say <i>“Apple cannot check it for malicious software.”</i> <b>That's expected.</b> It means I haven't paid Apple's $99/year developer fee — I'm 13, and I'd rather spend that once people actually want this. Right-click → Open gets past it. Still stuck? <b>System Settings → Privacy &amp; Security → Open Anyway</b>.</p>
+        <p>Don't take my word for it — <a href="https://github.com/douglasruan1216/frostbyte">read the source</a>, or build it yourself with <span class="mono">./build_app.sh</span>.</p>
+      </div>
+      <div class="buyrow">
+        <button class="btn btn-primary" id="thanksBack" type="button">← Back to the site</button>
+        <a class="btn btn-ghost" href="https://github.com/douglasruan1216/frostbyte/releases/latest/download/FrostByte.zip">Download didn't start? Try again</a>
+      </div>
+      <p class="boba">🧋 If it saves your Mac from sounding like a jet engine, that's the whole point. Enjoy!</p>
+    </div>
+  </section>
+
 </main>
 
 <nav class="pager" id="pager" aria-label="Page navigation">
@@ -495,7 +523,7 @@
     var motion = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     /* ── Pager ── */
-    var pages = [].slice.call(document.querySelectorAll('.page'));
+    var pages = [].slice.call(document.querySelectorAll('.page:not(#thanks)'));
     var back = document.getElementById('pgBack');
     var next = document.getElementById('pgNext');
     var counter = document.getElementById('pgCount');
@@ -506,7 +534,9 @@
     pages.forEach(function(){
       var d = document.createElement('span'); d.className = 'dot'; dotsWrap.appendChild(d);
     });
+    var thanks = document.getElementById('thanks');
     function show(i){
+      thanks.classList.remove('active');
       idx = Math.max(0, Math.min(pages.length - 1, i));
       pages.forEach(function(p, n){ p.classList.toggle('active', n === idx); });
       counter.textContent = (idx + 1) + ' / ' + pages.length;
@@ -616,6 +646,30 @@
     }
     segCool.addEventListener('click', function(){ pick('cool'); });
     segFreeze.addEventListener('click', function(){ pick('freeze'); });
+
+    /* ── Thank-you view ────────────────────────────────────────────────────
+       We can't detect whether the download actually finished — a page has no
+       access to the filesystem, by design. So we don't pretend to: the link
+       is left to do its normal thing (GitHub serves the zip as an attachment,
+       so the page stays put) and we just show the install steps, plus a
+       "try again" link for when it silently didn't start. */
+    var thanksPage = document.getElementById('thanks');
+    var pagerEl = document.getElementById('pager');
+    var counterEl = document.getElementById('pgCount');
+    function showThanks(){
+      [].forEach.call(document.querySelectorAll('.page'), function(p){ p.classList.remove('active'); });
+      thanksPage.classList.add('active');
+      pagerEl.hidden = true;
+      counterEl.textContent = 'Thanks!';
+      window.scrollTo(0, 0);
+    }
+    [].forEach.call(document.querySelectorAll('a.btn-pro'), function(a){
+      a.addEventListener('click', function(){ setTimeout(showThanks, 350); });
+    });
+    document.getElementById('thanksBack').addEventListener('click', function(){
+      counterEl.textContent = '';
+      show(pages.length - 1);   // back to Pricing, where they came from
+    });
 
     if(!motion){ apply(mode); } else { startLoop(); }
   })();
