@@ -183,7 +183,12 @@
 
   /* ── Pages ── */
   .deck{position:relative; z-index:1}
-  .page{display:none; min-height:100vh; padding:92px 0 104px; flex-direction:column; justify-content:center}
+  /* `safe center` matters: with plain `center`, any page taller than the
+     viewport overflows BOTH ways and the top gets clipped where you can't
+     scroll to it. `safe` falls back to start-aligned instead of clipping.
+     The plain value stays first as a fallback for old browsers. */
+  .page{display:none; min-height:100vh; padding:92px 0 104px; flex-direction:column;
+        justify-content:center; justify-content:safe center}
   .page.active{display:flex}
   @media (prefers-reduced-motion:no-preference){
     .page.active{animation:pageIn .42s cubic-bezier(.2,.7,.2,1)}
