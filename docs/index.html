@@ -49,10 +49,9 @@
   }
 
   *{box-sizing:border-box}
-  /* Reserve the scrollbar's width permanently. The pageIn/cardIn animations
-     slide content down a few px, which briefly overflows and summons a
-     scrollbar — without this, its arrival and exit resize the whole layout
-     and the page visibly jumps on every navigation. */
+  /* Reserve the scrollbar's width permanently, so a scrollbar arriving or
+     leaving never resizes the layout. Pages differ in height, so without this
+     any navigation to/from a page that overflows jumps the whole deck sideways. */
   html{scrollbar-gutter:stable}
   body{
     margin:0; background:var(--ground); color:var(--text);
@@ -196,7 +195,12 @@
         justify-content:center; justify-content:safe center}
   .page.active{display:flex}
   @media (prefers-reduced-motion:no-preference){
-    .page.active{animation:pageIn .42s cubic-bezier(.2,.7,.2,1)}
+    /* Animate the inner wrapper, NOT the .page section. The section is already
+       100vh tall, so sliding IT down 14px makes the document taller than the
+       viewport for the length of the animation and flashes a scrollbar. The
+       wrapper moves inside the section's 104px bottom padding, so nothing
+       ever overflows. */
+    .page.active > .wrap{animation:pageIn .42s cubic-bezier(.2,.7,.2,1)}
     /* staggered reveal for each boxed element on the active page */
     .page.active .step,.page.active .feat,.page.active .t,.page.active .tablewrap{animation:cardIn .55s both cubic-bezier(.2,.7,.2,1)}
     .page.active .step:nth-child(1),.page.active .feat:nth-child(1),.page.active .t:nth-child(1),.page.active .tablewrap{animation-delay:.10s}
