@@ -11,6 +11,16 @@ Mac Mini and MacBook Air that get hot and loud fast.
 
 ---
 
+## 🎉 Early access — the first 100 downloads keep Pro forever
+
+FrostByte is brand new, so **every Pro feature is free right now**. Download it during early
+access and your Mac stays unlocked **permanently** — even after Pro becomes a paid unlock.
+
+No key, no account, no email. The app stamps itself on first run and that's that. If you're
+reading this, you're early. 💙
+
+---
+
 ## What it does
 
 - **Auto-cool when you're AFK.** Pick a game; when you click away for a bit, FrostByte
@@ -23,7 +33,7 @@ Mac Mini and MacBook Air that get hot and loud fast.
 - **Savings estimate** — see the energy, money, and CO₂ you've saved, with fun references
   ("Enough to buy N Robux 🎮"). Works for 150 countries or a custom electricity rate.
 
-### FrostByte Pro unlocks
+### FrostByte Pro unlocks — *all free during early access*
 
 - **Emergency Chill** — cools a game *even while you're playing* if it runs hot for a while.
 - **Deep Freeze** — fully pauses a game for a true 0% CPU (great for offline games).
@@ -49,7 +59,8 @@ Mac Mini and MacBook Air that get hot and loud fast.
 | **Phone remote**                |  —   | ✅  |
 | **Custom auto-launch (any app)**|  —   | ✅  |
 
-**Price:** one-time unlock, no subscription. (Suggested: **$4.99**.)
+**Price:** free while in early access. Later, Pro becomes a **one-time $4.99 unlock** — never
+a subscription — and everyone who downloaded early keeps it anyway.
 
 ---
 
@@ -68,13 +79,34 @@ FrostByte is a local utility. **Nothing you do leaves your Mac.**
 
 ## Install
 
-1. Download `FrostByte.app`.
-2. Drag it to your Applications folder.
-3. Open it — it lives in your menu bar (the little 🧊 / heat emoji up top). No Dock icon.
+1. Download **`FrostByte.zip`** from the [latest release](../../releases/latest) and unzip it.
+2. Drag `FrostByte.app` into your **Applications** folder.
+3. **Right-click it → Open** → click **Open** in the dialog. *(Right-click matters — see below.)*
+4. That's it. It lives in your menu bar (the 🧊 / heat emoji up top). No Dock icon.
 
-> First launch: because FrostByte is distributed outside the Mac App Store, macOS may ask
-> you to confirm you want to open it. (Once notarized by the developer, this is a normal
-> one-click confirmation — see `PUBLISHING.md`.)
+### ⚠️ "Apple cannot check it for malicious software"
+
+You'll see that warning on first launch, and it's expected. It doesn't mean anything is wrong
+with the app — it means I haven't paid Apple's **$99/year** Developer fee yet, so Apple hasn't
+signed off on it. I'm a 13-year-old dev, and I'd rather spend that money once people actually
+want the app than before.
+
+**Right-clicking → Open gets past it.** If you double-click instead, macOS gives you no "Open"
+button at all — that's why step 3 says right-click.
+
+If macOS still refuses:
+
+> **System Settings → Privacy & Security** → scroll down → click **"Open Anyway"** next to FrostByte.
+
+You shouldn't have to take my word for any of this — **all the source is right here in this
+repo.** Read it, or build it yourself:
+
+```sh
+git clone https://github.com/douglasruan1216/frostbyte.git
+cd frostbyte && ./build_app.sh
+```
+
+That builds the exact app in the release, with no Xcode needed.
 
 ---
 
