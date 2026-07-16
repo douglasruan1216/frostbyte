@@ -45,6 +45,17 @@ final class CoolController: ObservableObject {
     /// keep it forever even after a delete. The `earlyAdopter` stamp above is
     /// how this Mac stays unlocked.
     private static let storeProductID = ""
+    /// Your public Gumroad product page — where the in-app "Get Pro" button
+    /// sends people. Empty until the store exists, and the button HIDES itself
+    /// while it is, so it can never dead-end someone who wants to pay.
+    /// ⚠️ LAUNCH TODO: fill this in at the same time as storeProductID.
+    private static let storeURL = ""
+    /// Only show a buy button once there's somewhere to buy.
+    var canBuy: Bool { !Self.storeURL.isEmpty }
+    func openStore() {
+        guard let u = URL(string: Self.storeURL) else { return }
+        NSWorkspace.shared.open(u)
+    }
 
     /// Try to unlock Pro with a license key, verified online against the store
     /// (once storeProductID is set).

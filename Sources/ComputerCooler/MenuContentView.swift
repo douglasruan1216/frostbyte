@@ -426,7 +426,12 @@ struct MenuContentView: View {
                     .font(.caption2).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             } else {
-                Text("Unlocks Emergency Chill, Deep Freeze, phone remote, custom auto-launch, and cooling unlimited apps.")
+                // Every install starts a trial, so "locked" always means the
+                // trial has run out — say that instead of a generic pitch.
+                Text("Your 7-day free trial has ended. FrostByte still cools one app for free, forever.")
+                    .font(.caption2.bold()).foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                Text("Pro brings back Emergency Chill, Deep Freeze, the phone remote, custom auto-launch, and cooling unlimited apps.")
                     .font(.caption2).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
                 licenseBox
@@ -435,7 +440,18 @@ struct MenuContentView: View {
     }
 
     /// Shared by the trial and locked states — both need a way to enter a key.
+    /// The buy button comes first: someone without a key needs somewhere to go,
+    /// and a bare "paste your key" box is a dead end if you've never bought one.
     @ViewBuilder private var licenseBox: some View {
+        if cool.canBuy {
+            Button { cool.openStore() } label: {
+                Label("Get Pro — $4.99", systemImage: "cart.fill").frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent).controlSize(.small)
+            Text("Opens the store in your browser. You'll get a license key by email — paste it below.")
+                .font(.caption2).foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
         HStack {
             TextField("License key", text: $licenseField)
                 .textFieldStyle(.roundedBorder).font(.caption)
